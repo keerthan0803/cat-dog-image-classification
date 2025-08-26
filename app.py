@@ -1,9 +1,13 @@
+import os
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-
+MODEL_PATH = 'best_model.h5'
+if not os.path.exists(MODEL_PATH):
+    import gdown
+    # Use the direct download link for Google Drive file ID
+    gdown.download('https://drive.google.com/uc?id=1wqpPb-oSXU4gl_Bj2DgcNcvYzjpFs40G', MODEL_PATH, quiet=False)
 # Load the trained model once at startup
-MODEL_PATH = 'model.h5'
 IMG_SIZE = (128, 128)
 model = load_model(MODEL_PATH)
 
