@@ -6,3 +6,4 @@ pandas
 numpy
 pillow
 scikit-learn
+gunicorn
