@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Run Dog or Cat ML Script</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f7f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            margin-top: 40px;
+            text-align: center;
+        }
+        form {
+            background: #fff;
+            padding: 24px 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 350px;
+            box-sizing: border-box;
+        }
+        input[type="file"] {
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        button {
+            background: #4f8cff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            max-width: 200px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        #preview {
+            margin: 16px 0 8px 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+            max-width: 90vw;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        #output {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+            padding: 16px;
+            min-width: 0;
+            width: 100%;
+            max-width: 350px;
+            min-height: 40px;
+            margin-bottom: 32px;
+            color: #222;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+        }
+        @media (max-width: 500px) {
+            form {
+                padding: 16px 8px;
+                max-width: 98vw;
+            }
+            #output {
+                padding: 10px;
+                font-size: 1rem;
+                max-width: 98vw;
+            }
+            #preview {
+                max-width: 98vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dog or Cat Image Classifier</h1>
+    <form id="uploadForm">
+        <input type="file" id="imageInput" name="image" accept="image/*" required />
+        <button type="submit">Predict</button>
+    </form>
+    <br>
+    <img id="preview" src="#" alt="Image preview" style="max-width:200px; display:none;"/>
+    <pre id="output"></pre>
+    <script>
+        // Show image preview
+        document.getElementById('imageInput').onchange = function(event) {
+            const [file] = event.target.files;
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // Handle form submit
+        document.getElementById('uploadForm').onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageInput');
+            if (fileInput.files.length === 0) return;
+            formData.append('image', fileInput.files[0]);
+            document.getElementById('output').textContent = 'Predicting...';
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('output').textContent = 'Prediction: ' + data.prediction;
+            })
+            .catch(err => {
+                document.getElementById('output').textContent = 'Error: ' + err;
+            });
+        };
+    </script>
+</body>
+</html>
