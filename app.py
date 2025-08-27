@@ -22,28 +22,33 @@ CORS(app)
 
 @app.route('/')
 def index():
+    print("INDEX ROUTE CALLED")
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image uploaded'}), 400
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    filename = secure_filename(file.filename)
-    filepath = os.path.join('uploads', filename)
-    os.makedirs('uploads', exist_ok=True)
-    file.save(filepath)
-    # Preprocess the image and predict
-    img = image.load_img(filepath, target_size=IMG_SIZE)
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
-    pred = model.predict(img_array)[0][0]
-    prediction = 'dog' if pred > 0.5 else 'cat'
-    os.remove(filepath)
-    return jsonify({'prediction': prediction})
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image uploaded'}), 400
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        filename = secure_filename(file.filename)
+        filepath = os.path.join('uploads', filename)
+        os.makedirs('uploads', exist_ok=True)
+        file.save(filepath)
+        # Preprocess the image and predict
+        img = image.load_img(filepath, target_size=IMG_SIZE)
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = preprocess_input(img_array)
+        pred = model.predict(img_array)[0][0]
+        prediction = 'dog' if pred > 0.5 else 'cat'
+        os.remove(filepath)
+        return jsonify({'prediction': prediction})
+    except Exception as e:
+        # Always return a valid JSON response
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/run-script', methods=['POST'])
 def run_script():
