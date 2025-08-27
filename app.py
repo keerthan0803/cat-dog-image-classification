@@ -1,14 +1,13 @@
+
 import os
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
 MODEL_PATH = 'best_model.h5'
-if not os.path.exists(MODEL_PATH):
-    import gdown
-    # Use the direct download link for Google Drive file ID
-    gdown.download('https://drive.google.com/uc?id=1wqpPb-oSXU4gl_Bj2DgcNcvYzjpFs40G', MODEL_PATH, quiet=False)
-# Load the trained model once at startup
 IMG_SIZE = (128, 128)
+
 model = load_model(MODEL_PATH)
 
 from flask import Flask, jsonify, render_template, request
@@ -38,8 +37,9 @@ def predict():
     file.save(filepath)
     # Preprocess the image and predict
     img = image.load_img(filepath, target_size=IMG_SIZE)
-    img_array = image.img_to_array(img) / 255.0
+    img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
+    img_array = preprocess_input(img_array)
     pred = model.predict(img_array)[0][0]
     prediction = 'dog' if pred > 0.5 else 'cat'
     os.remove(filepath)

@@ -56,12 +56,13 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Dropout, Input
 from tensorflow.keras.models import Model
 
+
 base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(128, 128, 3))
 base_model.trainable = False  # Freeze base model
 
 inputs = Input(shape=(128, 128, 3))
-x = preprocess_input(inputs)
-x = base_model(x, training=False)
+# Do NOT use preprocess_input or division here; data is already rescaled by ImageDataGenerator
+x = base_model(inputs, training=False)
 x = GlobalAveragePooling2D()(x)
 x = Dense(128, activation='relu')(x)
 x = Dropout(0.5)(x)
