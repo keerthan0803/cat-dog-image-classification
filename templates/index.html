@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱🐶 Cat or Dog Classifier - AI Image Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .emoji-header {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f7fafc;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6fffa;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .upload-text {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .reset-btn:hover {
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        #preview-container {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        #preview {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            object-fit: contain;
+        }
+
+        #output {
+            display: none;
+            margin-top: 20px;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border: 2px solid #4fd1c5;
+        }
+
+        .result-error {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border: 2px solid #fc8181;
+        }
+
+        .result-loading {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            border: 2px solid #9f7aea;
+        }
+
+        .prediction-emoji {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .prediction-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .prediction-subtext {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #667eea;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0aec0;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .emoji-header {
+                font-size: 2.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 15px;
+            }
+
+            .upload-text {
+                font-size: 1rem;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 0.95rem;
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+
+            .prediction-emoji {
+                font-size: 3rem;
+            }
+
+            .prediction-text {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="emoji-header">🐱🐶</div>
+            <h1>Cat or Dog Classifier</h1>
+            <p class="subtitle">Upload an image and let AI identify whether it's a cat or dog!</p>
+        </header>
+
+        <form id="uploadForm">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <p class="upload-text">Click to upload or drag & drop</p>
+                <p class="upload-subtext">PNG, JPG, JPEG (Max 10MB)</p>
+            </div>
+            <input type="file" id="imageInput" name="image" accept="image/*" required />
+            
+            <div id="preview-container">
+                <img id="preview" src="#" alt="Image preview"/>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" id="predictBtn" disabled>🔮 Predict</button>
+                <button type="button" class="reset-btn" id="resetBtn" style="display:none;">🔄 Try Another</button>
+            </div>
+        </form>
+
+        <div id="output"></div>
+
+        <footer>
+            <p>Powered by TensorFlow & MobileNet 🚀</p>
+        </footer>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('preview-container');
+        const preview = document.getElementById('preview');
+        const uploadForm = document.getElementById('uploadForm');
+        const predictBtn = document.getElementById('predictBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const output = document.getElementById('output');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                imageInput.files = files;
+                showPreview(files[0]);
+            }
+        });
+
+        // Show image preview
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                showPreview(file);
+            }
+        });
+
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                previewContainer.style.display = 'block';
+                predictBtn.disabled = false;
+                output.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Handle form submit
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (imageInput.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+
+            // Show loading state
+            predictBtn.disabled = true;
+            output.className = 'result-loading';
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div class="spinner"></div>
+                <p class="prediction-text">Analyzing image...</p>
+                <p class="prediction-subtext">Our AI is thinking 🤔</p>
+            `;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Show success result
+                const emoji = data.prediction.toLowerCase() === 'dog' ? '🐶' : '🐱';
+                const animalName = data.prediction.charAt(0).toUpperCase() + data.prediction.slice(1);
+                const confidence = data.confidence ? ` (${data.confidence}% confident)` : '';
+                
+                output.className = 'result-success';
+                output.innerHTML = `
+                    <div class="prediction-emoji">${emoji}</div>
+                    <p class="prediction-text">It's a ${animalName}!</p>
+                    <p class="prediction-subtext">AI Classification Complete${confidence} ✨</p>
+                `;
+                
+                resetBtn.style.display = 'inline-block';
+            } catch (error) {
+                // Show error result
+                output.className = 'result-error';
+                output.innerHTML = `
+                    <div class="prediction-emoji">⚠️</div>
+                    <p class="prediction-text">Oops! Something went wrong</p>
+                    <p class="prediction-subtext">${error.message}</p>
+                `;
+                predictBtn.disabled = false;
+            }
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            imageInput.value = '';
+            previewContainer.style.display = 'none';
+            output.style.display = 'none';
+            predictBtn.disabled = true;
+            resetBtn.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

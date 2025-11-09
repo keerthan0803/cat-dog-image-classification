@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cat-dog-classifier
+    env: python
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn --config gunicorn_config.py app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: TF_CPP_MIN_LOG_LEVEL
+        value: 2
+      - key: TF_ENABLE_ONEDNN_OPTS
+        value: 0
