@@ -9,9 +9,15 @@ import subprocess
 import sys
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+import gdown
 
 MODEL_PATH = 'best_model.h5'
 IMG_SIZE = (128, 128)
+
+# Google Drive file ID for the model
+# Replace with your model's Google Drive file ID
+MODEL_GDRIVE_ID = os.environ.get('MODEL_GDRIVE_ID', '')
+MODEL_GDRIVE_URL = f'https://drive.google.com/uc?id={MODEL_GDRIVE_ID}'
 
 # Initialize Flask app first
 app = Flask(__name__, template_folder='templates')
@@ -20,9 +26,24 @@ CORS(app)
 # Lazy load the model to avoid timeout during startup
 model = None
 
+def download_model():
+    """Download model from Google Drive if not present"""
+    if not os.path.exists(MODEL_PATH) and MODEL_GDRIVE_ID:
+        print(f"Downloading model from Google Drive...")
+        try:
+            gdown.download(MODEL_GDRIVE_URL, MODEL_PATH, quiet=False)
+            print("Model downloaded successfully!")
+        except Exception as e:
+            print(f"Error downloading model: {e}")
+            raise
+
 def get_model():
     global model
     if model is None:
+        # Download model if not present
+        if not os.path.exists(MODEL_PATH):
+            download_model()
+        
         print("Loading model...")
         model = load_model(MODEL_PATH, compile=False)
         print("Model loaded successfully!")
