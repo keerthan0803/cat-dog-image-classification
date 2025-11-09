@@ -1,6 +1,5 @@
 model.h5
 best_model.h5
 model_quant.tflite
-*.h5
 *.tflite
 uploads/

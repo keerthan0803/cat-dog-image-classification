@@ -11,11 +11,11 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import gdown
 
-MODEL_PATH = 'best_model.h5'
+MODEL_PATH = 'mobilenet_model.h5'
 IMG_SIZE = (128, 128)
 
-# Google Drive file ID for the model
-# Replace with your model's Google Drive file ID
+# Google Drive file ID for the model (optional - for best_model.h5)
+# Replace with your model's Google Drive file ID if using larger model
 MODEL_GDRIVE_ID = os.environ.get('MODEL_GDRIVE_ID', '')
 MODEL_GDRIVE_URL = f'https://drive.google.com/uc?id={MODEL_GDRIVE_ID}'
 
